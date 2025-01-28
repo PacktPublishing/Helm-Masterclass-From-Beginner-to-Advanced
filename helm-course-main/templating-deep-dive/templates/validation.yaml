@@ -1,0 +1,7 @@
+{{- if and .Values.securityContext .Values.securityContext.enabled -}}
+{{- $_ := required "securityContext.runAsUser is required when setting securityContext and enabled is true" .Values.securityContext.runAsUser -}}
+{{- $_ := required "securityContext.fsGroup is required when setting securityContext and enabled is true" .Values.securityContext.fsGroup -}}
+{{- if int .Values.securityContext.runAsUser | eq 0 -}}
+{{- fail "Invalid value for: securityContext.runAsUser. Containers cannot be run as root users. Please provide a uid greater than 0" -}}
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,14 @@
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "test-hook.fullname" . }}-test-files
+  labels:
+    {{- include "test-hook.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": {{ .Values.tests.hookDeletePolicies | default (list "before-hook-creation") | join "," }}
+data:
+{{ tpl (.Files.Glob "files/test-scripts/*").AsConfig . | indent 2 }} 
+{{- end }}

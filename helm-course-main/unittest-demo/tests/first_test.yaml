@@ -1,0 +1,18 @@
+suite: test deployment
+templates:
+  - deployment.yaml
+tests:
+  - it: should match the naming convention of ending in "-my-chart"
+    asserts:
+      - isKind:
+          of: Deployment
+      - matchRegex:
+          path: metadata.name
+          pattern: -my-chart$
+  - it: should correctly use the "image.tag" property when set
+    set:
+      image.tag: latest
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:latest

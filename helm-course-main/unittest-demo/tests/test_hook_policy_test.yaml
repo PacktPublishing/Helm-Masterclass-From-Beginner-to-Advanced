@@ -1,0 +1,21 @@
+suite: test hook delete policy
+templates:
+  - tests/test-connection.yaml
+tests:
+  - it: should create a pod resource
+    asserts:
+      - isKind:
+          of: Pod
+  - it: should set the delete policy to before-hook-creation,hook-succeeded by default
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: before-hook-creation,hook-succeeded
+  - it: should correctly set the delete policy to before-hook-creation when tests.hookDeletePolicies is not set
+    set:
+      tests:
+        hookDeletePolicies: []
+    asserts:
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: before-hook-creation

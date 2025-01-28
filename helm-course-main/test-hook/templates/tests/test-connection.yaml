@@ -1,0 +1,30 @@
+{{- if .Values.tests.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "test-hook.fullname" . }}-test-connection"
+  labels:
+    {{- include "test-hook.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": {{ .Values.tests.hookDeletePolicies | default (list "before-hook-creation") | join "," }}
+spec:
+  containers:
+{{- with .Values.tests.container }}
+    - name: {{ default "alpine" .nameOverride }}
+      image: "{{ .imageRepository }}:{{ .imageTag }}"
+{{- end }}
+{{- with .Values.tests.scripts }}
+      command: ['sh', '-c', '{{ .volumeMountPath }}/{{ .runFileName }}']
+      volumeMounts:
+        - mountPath: {{ .volumeMountPath }}
+          name: {{ .volumeName }}
+{{- end }}
+  restartPolicy: Never
+  volumes:
+    - name: {{ .Values.tests.scripts.volumeName }}
+      configMap:
+        name: {{ include "test-hook.fullname" . }}-test-files
+        defaultMode: 0744
+{{- end }}

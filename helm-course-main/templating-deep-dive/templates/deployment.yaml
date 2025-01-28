@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "templating-deep-dive.fullname" . }}
+  labels: 
+    {{- include "templating-deep-dive.selectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: 
+      {{- include "templating-deep-dive.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: 
+        {{- include "templating-deep-dive.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          {{- with .Values.securityContext | default dict }}
+          {{- if and (hasKey . "enabled") .enabled }}
+          securityContext:
+            runAsUser: {{ .runAsUser }}
+            fsGroup: {{ .fsGroup }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.services | default dict | len }}
+          ports:
+            - containerPort: {{ .Values.containerPorts.http }}
+          {{- end }}
